@@ -37,19 +37,22 @@ namespace RtspConnector.Client
 
         private async Task RecordAsync(RtspHelper rtsp, RtspConfiguration configuration, CancellationToken token)
         {
-            var path = GetPathBy(configuration);
+            var basepath = GetPathBy(configuration);
 
             if (token.IsCancellationRequested)
                 return;
 
-            CreateDirIfNotExists(path);
 
             bool result;
             do
             {
+                var dt = DateTime.Now;
+                var fullfolderPath = System.IO.Path.Combine(basepath, dt.ToString("yyyy-MM-dd"), dt.ToString("HH"));
+                CreateDirIfNotExists(fullfolderPath);
+
                 var filepattern = $"{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.mp4";
 
-                var output = System.IO.Path.Combine(path, filepattern);
+                var output = System.IO.Path.Combine(fullfolderPath, filepattern);
 
                 if (token.IsCancellationRequested)
                     return;
@@ -84,7 +87,7 @@ namespace RtspConnector.Client
         {
             var path = System.IO.Path.Combine(configuration.BaseFolder, configuration.CamName, Subfolder);
 
-            return path;
+            return path.Replace(" ", "_");
         }
     }
 }
