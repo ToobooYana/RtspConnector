@@ -15,7 +15,7 @@ namespace RtspConnector.Client
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
-            System.Console.WriteLine("RTSP Connector --- sobald eine Kamera aktiv wird und Livebilder streamt, wird der Connector aktiv und speichert diesen als MP4 in das angegeben Verzeichnis.");
+            System.Console.WriteLine("RTSP Connector --- sobald eine Kamera aktiv wird und Livebilder streamt, wird der Connector aktiv und speichert diesen als MP4 in das angegebene Verzeichnis.");
             System.Console.WriteLine("© Copyright 2021");
             System.Console.WriteLine();
 
