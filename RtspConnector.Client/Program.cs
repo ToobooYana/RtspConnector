@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,10 @@ namespace RtspConnector.Client
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
 
             System.Console.WriteLine("RTSP Connector --- sobald eine Kamera aktiv wird und Livebilder streamt, wird der Connector aktiv und speichert diesen als MP4 in das angegebene Verzeichnis.");
             System.Console.WriteLine("© Copyright 2021");
@@ -45,13 +50,14 @@ namespace RtspConnector.Client
             }
 
             System.Console.WriteLine();
-            System.Console.WriteLine("Gestartet.");
+            Log.Information("Gestartet");
 
             await Task.WhenAll(tasks.AsParallel().Select(async task => await task()));
             
             System.Console.WriteLine("Taste drücken zum Beenden");
             System.Console.ReadKey();
 
+            Log.CloseAndFlush();
             source.Cancel();
         }
 

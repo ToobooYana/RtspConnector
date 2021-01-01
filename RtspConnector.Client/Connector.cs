@@ -1,4 +1,5 @@
 ﻿using ColinChang.FFmpegHelper;
+using Serilog;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,7 @@ namespace RtspConnector.Client
                     return;
                 
                 if (healthcheck == 0)
-                    System.Console.WriteLine($"{filepath.Timestamp.ToString("G")} => Working for {configuration.CamName}");
+                    Log.Information($"Working for {configuration.CamName}");
                 
                 healthcheck++;
 
@@ -66,7 +67,7 @@ namespace RtspConnector.Client
                 if (result)
                 {
                     _filepathWorker.MoveToDateBasedSubfolder(filepath, out var destination);
-                    System.Console.WriteLine($" ==> Recording exists in '{destination}'.");
+                    Log.Information($"{configuration.CamName}: Recording exists in '{destination}'.");
 
                     await Task.Delay(configuration.DelayAfterRecording * 1000); // Default: 10
                 }
