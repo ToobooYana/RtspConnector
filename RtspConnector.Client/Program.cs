@@ -15,6 +15,10 @@ namespace RtspConnector.Client
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
+            System.Console.WriteLine("RTSP Connector --- sobald eine Kamera aktiv wird und Livebilder streamt, wird der Connector aktiv und speichert diesen als MP4 in das angegeben Verzeichnis.");
+            System.Console.WriteLine("© Copyright 2021");
+            System.Console.WriteLine();
+
             var root = new RtspGlobal();
 
             configuration.GetSection("RtspGlobal").Bind(root);
@@ -30,20 +34,21 @@ namespace RtspConnector.Client
             CancellationTokenSource source = new CancellationTokenSource();
             CancellationToken token = source.Token;
 
-            
-
-
             var tasks = new List<Func<Task>>();
             foreach (var cam in root.Cams)
             {
                 var connector = new Connector();
 
+                System.Console.WriteLine($"{cam.CamName}: {cam.Channel}");
+
                 tasks.Add(() => connector.RunAsync(cam, token));
             }
 
-            await Task.WhenAll(tasks.AsParallel().Select(async task => await task()));
-
+            System.Console.WriteLine();
             System.Console.WriteLine("Gestartet.");
+
+            await Task.WhenAll(tasks.AsParallel().Select(async task => await task()));
+            
             System.Console.WriteLine("Taste drücken zum Beenden");
             System.Console.ReadKey();
 

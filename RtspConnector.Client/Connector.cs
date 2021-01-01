@@ -7,17 +7,16 @@ namespace RtspConnector.Client
 {
     public interface IConnector
     {
-
+        Task RunAsync(RtspConfiguration configuration, CancellationToken token);
     }
 
-    internal class Connector
+    internal class Connector : IConnector
     {
-
-        private const string Subfolder = "Event";
+        private FilepathWorker _filepathWorker;
 
         public Connector()
         {
-
+            _filepathWorker = new FilepathWorker();
         }
 
         public async Task RunAsync(RtspConfiguration configuration, CancellationToken token)
@@ -37,57 +36,55 @@ namespace RtspConnector.Client
 
         private async Task RecordAsync(RtspHelper rtsp, RtspConfiguration configuration, CancellationToken token)
         {
-            var basepath = GetPathBy(configuration);
+            var basepath = _filepathWorker.GetPathBy(configuration);
 
             if (token.IsCancellationRequested)
                 return;
 
+            int healthcheck = 0;
 
             bool result;
             do
             {
-                var dt = DateTime.Now;
-                var fullfolderPath = System.IO.Path.Combine(basepath, dt.ToString("yyyy-MM-dd"), dt.ToString("HH"));
-                CreateDirIfNotExists(fullfolderPath);
-
-                var filepattern = $"{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.mp4";
-
-                var output = System.IO.Path.Combine(fullfolderPath, filepattern);
+                var filepath = _filepathWorker.CreateFilepath(basepath);
 
                 if (token.IsCancellationRequested)
                     return;
+                
+                if (healthcheck == 0)
+                    System.Console.WriteLine($"{filepath.Timestamp.ToString("G")} => Working for {configuration.CamName}");
+                
+                healthcheck++;
 
                 result = await rtsp.Record2VideoFileAsync(
-                        output,
+                        filepath.TempPath,
                         TimeSpan.FromSeconds(configuration.Duration), // default: 30
                         null,
                         Transport.Tcp
                         );
 
                 if (result)
+                {
+                    _filepathWorker.MoveToDateBasedSubfolder(filepath, out var destination);
+                    System.Console.WriteLine($" ==> Recording exists in '{destination}'.");
+
                     await Task.Delay(configuration.DelayAfterRecording * 1000); // Default: 10
+                }
                 else
+                {
                     await Task.Delay(configuration.RtspIntervall * 1000); // Default: 3
+                }
 
                 if (token.IsCancellationRequested)
                     return;
 
+                if (healthcheck == 10)
+                    healthcheck = 0;
+
             } while (true);
         }
 
-        private void CreateDirIfNotExists(string path)
-        {
-            if (!System.IO.Directory.Exists(path))
-            {
-                System.IO.Directory.CreateDirectory(path);
-            }
-        }
+        
 
-        private string GetPathBy(RtspConfiguration configuration)
-        {
-            var path = System.IO.Path.Combine(configuration.BaseFolder, configuration.CamName, Subfolder);
-
-            return path.Replace(" ", "_");
-        }
     }
 }
