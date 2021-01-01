@@ -10,7 +10,7 @@ For example:
 > \\\\NAS\Recordings\Garage\Event\2020-12-31\15
 
 This project uses:
-FFmpegHelper: https://github.com/colin-chang/FFmpegHelper
-FFmpeg Libraries: http://ffmpeg.org/
+- FFmpegHelper: https://github.com/colin-chang/FFmpegHelper
+- FFmpeg Libraries: http://ffmpeg.org/
 
-Many thanks to Colin Chang for making this repository FFmpegHelper available!
+Many thanks to [Colin Chang](https://github.com/colin-chang) for making this repository FFmpegHelper available!
